@@ -289,8 +289,7 @@ girara_session_t* girara_session_create(void) {
   session->gtk.inputbar_box       = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
   gtk_box_set_homogeneous(session->gtk.inputbar_box, TRUE);
   session->gtk.view     = gtk_scrolled_window_new(NULL, NULL);
-  session->gtk.viewport = gtk_viewport_new(NULL, NULL);
-  gtk_widget_add_events(session->gtk.viewport, GDK_SCROLL_MASK);
+  gtk_widget_add_events(session->gtk.view, GDK_SCROLL_MASK);
   session->gtk.statusbar         = gtk_event_box_new();
   session->gtk.notification_area = gtk_event_box_new();
   session->gtk.notification_text = gtk_label_new(NULL);
@@ -324,7 +323,7 @@ bool girara_session_init(girara_session_t* session, const char* sessionname) {
   session->private_data->session_name = g_strdup((sessionname == NULL) ? "girara" : sessionname);
 
   /* enable smooth scroll events */
-  gtk_widget_add_events(session->gtk.viewport, GDK_SMOOTH_SCROLL_MASK);
+  gtk_widget_add_events(session->gtk.view, GDK_SMOOTH_SCROLL_MASK);
 
   /* load CSS style */
   fill_template_with_values(session);
@@ -394,9 +393,8 @@ bool girara_session_init(girara_session_t* session, const char* sessionname) {
 
   scrolled_window_set_scrollbar_visibility(GTK_SCROLLED_WINDOW(session->gtk.view), show_hscrollbar, show_vscrollbar);
 
-  /* viewport */
-  gtk_container_add(GTK_CONTAINER(session->gtk.view), session->gtk.viewport);
-  gtk_viewport_set_shadow_type(GTK_VIEWPORT(session->gtk.viewport), GTK_SHADOW_NONE);
+  /* scrolled window */
+  gtk_scrolled_window_set_shadow_type(GTK_SCROLLED_WINDOW(session->gtk.view), GTK_SHADOW_NONE);
 
   /* statusbar */
   gtk_container_add(GTK_CONTAINER(session->gtk.statusbar), GTK_WIDGET(session->gtk.statusbar_entries));
@@ -668,14 +666,14 @@ void girara_dialog(girara_session_t* session, const char* dialog, bool invisible
 bool girara_set_view(girara_session_t* session, GtkWidget* widget) {
   g_return_val_if_fail(session != NULL, false);
 
-  GtkWidget* child = gtk_bin_get_child(GTK_BIN(session->gtk.viewport));
+  GtkWidget* child = gtk_bin_get_child(GTK_BIN(session->gtk.view));
 
   if (child != NULL) {
     g_object_ref(child);
-    gtk_container_remove(GTK_CONTAINER(session->gtk.viewport), child);
+    gtk_container_remove(GTK_CONTAINER(session->gtk.view), child);
   }
 
-  gtk_container_add(GTK_CONTAINER(session->gtk.viewport), widget);
+  gtk_container_add(GTK_CONTAINER(session->gtk.view), widget);
   gtk_widget_show_all(widget);
   gtk_widget_grab_focus(session->gtk.view);
 
